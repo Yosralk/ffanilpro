@@ -29,12 +29,15 @@ class Doctor {
     );
   }
 
-  Map<String, dynamic> toMap() => {
-    'name': name,
-    'specialization': specialization,
-    'imageUrl': imageUrl,
-    'description': description,
-    'rating': rating,
-    'fee': fee,
-  };
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'specialization': specialization,
+      'imageUrl': imageUrl,
+      'description': description,
+      'rating': rating,
+      'fee': fee,
+    };
+  }
 }

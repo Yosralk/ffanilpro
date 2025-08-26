@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../services/api_service.dart';
-import '../services/db_service.dart';
 import '../models/doctor_model.dart';
 import '../utils/constants.dart';
 import 'doctor_details_screen.dart';
@@ -29,13 +27,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetch() async {
     try {
       final data = await ApiService.fetchDoctors();
-      if (!mounted) return;
       setState(() {
         _doctors = data;
         _loading = false;
       });
     } catch (e) {
-      if (!mounted) return;
       setState(() => _loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading doctors: $e')),
@@ -47,10 +43,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final filtered = _doctors.where((d) {
       final q = _query.toLowerCase();
-      return d.name.toLowerCase().contains(q) || d.specialization.toLowerCase().contains(q);
+      return d.name.toLowerCase().contains(q) ||
+          d.specialization.toLowerCase().contains(q);
     }).toList();
-
-    final uid = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
       appBar: AppBar(
@@ -60,17 +55,28 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.calendar_month),
             tooltip: 'My Appointments',
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AppointmentsScreen())),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AppointmentsScreen()),
+              );
+            },
           ),
           IconButton(
             icon: const Icon(Icons.person),
             tooltip: 'Profile',
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              );
+            },
           ),
         ],
       ),
       body: Column(
         children: [
+          // 🔍 شريط البحث
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: TextField(
@@ -87,48 +93,61 @@ class _HomeScreenState extends State<HomeScreen> {
               onChanged: (v) => setState(() => _query = v),
             ),
           ),
+
+          // 📋 القائمة
           Expanded(
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
-                : (uid == null)
-                ? _buildList(filtered, const <String>{})
-                : StreamBuilder<Set<String>>(
-              stream: DbService.favoriteIdsStream(uid),
-              builder: (context, favSnap) {
-                final favIds = favSnap.data ?? <String>{};
-                return _buildList(filtered, favIds);
+                : filtered.isEmpty
+                ? const Center(
+              child: Text(
+                'No doctors found.',
+                style: TextStyle(fontSize: 16),
+              ),
+            )
+                : ListView.builder(
+              itemCount: filtered.length,
+              itemBuilder: (context, i) {
+                final d = filtered[i];
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 3,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(12),
+                    leading: CircleAvatar(
+                      radius: 28,
+                      backgroundImage: NetworkImage(d.imageUrl),
+                    ),
+                    title: Text(
+                      d.name,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      '${d.specialization} • ⭐ ${d.rating.toStringAsFixed(1)}',
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios,
+                        size: 18, color: Colors.grey),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              DoctorDetailsScreen(doctor: d),
+                        ),
+                      );
+                    },
+                  ),
+                );
               },
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildList(List<Doctor> items, Set<String> favIds) {
-    return ListView.separated(
-      itemCount: items.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
-      itemBuilder: (context, i) {
-        final d = items[i];
-        final isFav = favIds.contains(d.id);
-        return ListTile(
-          leading: CircleAvatar(backgroundImage: NetworkImage(d.imageUrl)),
-          title: Text(d.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-          subtitle: Text('${d.specialization} • ⭐ ${d.rating.toStringAsFixed(1)}'),
-          trailing: IconButton(
-            icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: isFav ? Colors.red : null),
-            onPressed: () async {
-              await DbService.toggleFavorite(d);
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(isFav ? 'Removed from favorites' : 'Added to favorites')),
-              );
-            },
-          ),
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DoctorDetailsScreen(doctor: d))),
-        );
-      },
     );
   }
 }

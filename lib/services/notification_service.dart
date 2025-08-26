@@ -3,20 +3,28 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
-  static final _plugin = FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin _plugin =
+  FlutterLocalNotificationsPlugin();
 
+  /// ✅ تهيئة النظام
   static Future<void> init() async {
+    // إعداد Android
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    // إعداد iOS
     const ios = DarwinInitializationSettings();
+
+    // ربط الإعدادات
     const settings = InitializationSettings(android: android, iOS: ios);
 
+    // تهيئة Local Notifications
     await _plugin.initialize(settings);
 
-    // ضروري للجدولة
+    // تهيئة Timezone
     tz.initializeTimeZones();
   }
 
-  /// إشعار فوري
+  /// ✅ إشعار فوري
   static Future<void> showNow({
     required String title,
     required String body,
@@ -25,16 +33,22 @@ class NotificationService {
       android: AndroidNotificationDetails(
         'doctime_channel',
         'Doctime Notifications',
+        channelDescription: 'General notifications for DocTime app',
         importance: Importance.max,
         priority: Priority.high,
       ),
       iOS: DarwinNotificationDetails(),
     );
 
-    await _plugin.show(0, title, body, details);
+    await _plugin.show(
+      DateTime.now().millisecondsSinceEpoch.remainder(100000), // unique id
+      title,
+      body,
+      details,
+    );
   }
 
-  /// إشعار مجدول
+  /// ✅ إشعار مجدول (Reminder)
   static Future<void> schedule({
     required String title,
     required String body,
@@ -44,13 +58,14 @@ class NotificationService {
       android: AndroidNotificationDetails(
         'doctime_channel',
         'Doctime Notifications',
+        channelDescription: 'Reminders for appointments',
         importance: Importance.max,
         priority: Priority.high,
       ),
       iOS: DarwinNotificationDetails(),
     );
 
-    // id لازم يكون int
+    // id فريد لكل إشعار
     final notifId = scheduledTime.millisecondsSinceEpoch.remainder(100000);
 
     await _plugin.zonedSchedule(
@@ -60,6 +75,7 @@ class NotificationService {
       tz.TZDateTime.from(scheduledTime, tz.local),
       details,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents: null, // إذا بدك تكرار (مثلاً يومياً) بتحط: DateTimeComponents.time
     );
   }
 }

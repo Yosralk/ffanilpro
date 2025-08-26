@@ -1,14 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/doctor_model.dart';
-import '../models/appointment.dart';
+import 'package:ffanilpro/models/appointment.dart';
 
 class DbService {
   static final _db = FirebaseFirestore.instance;
 
-  // -------------------- Appointments --------------------
-
-  // users/{uid}/appointments/{docId}
+  // ---------------- Appointments -----------------
   static CollectionReference<Map<String, dynamic>> _apptsCol(String uid) =>
       _db.collection('users').doc(uid).collection('appointments');
 
@@ -20,29 +18,31 @@ class DbService {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) throw Exception('Not authenticated');
 
-    final appt = Appointment(
-      id: '',
-      doctorId: doctor.id,
-      doctorName: doctor.name,
-      date: date,
-      time: time,
-      status: 'booked',
-      price: doctor.fee,
-    );
-
-    await _apptsCol(uid).add({
-      ...appt.toMap(),
+    final data = {
+      'doctorId': doctor.id,
+      'doctorName': doctor.name,
+      'specialization': doctor.specialization,
+      'date': date,
+      'time': time,
       'createdAt': FieldValue.serverTimestamp(),
-    });
+    };
+    await _apptsCol(uid).add(data);
   }
 
   static Stream<List<Appointment>> myAppointmentsStream(String uid) {
     return _apptsCol(uid)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs
-        .map((d) => Appointment.fromMap(d.id, d.data()))
-        .toList());
+        .map((snap) => snap.docs.map((d) {
+      final j = d.data();
+      return Appointment(
+        id: d.id,
+        doctorId: j['doctorId'] ?? '',
+        doctorName: j['doctorName'] ?? '',
+        date: j['date'] ?? '',
+        time: j['time'] ?? '',
+      );
+    }).toList());
   }
 
   static Future<void> deleteAppointment(String id) async {
@@ -51,65 +51,26 @@ class DbService {
     await _apptsCol(uid).doc(id).delete();
   }
 
-  static Future<void> cancelAppointment(String id) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) throw Exception('Not authenticated');
-    await _apptsCol(uid).doc(id).update({'status': 'cancelled'});
-  }
-
-  // -------------------- Favorites --------------------
-
-  // users/{uid}/favorites/{doctorId}
-  static CollectionReference<Map<String, dynamic>> _favCol(String uid) =>
+  // ---------------- Favorites -----------------
+  static CollectionReference<Map<String, dynamic>> _favsCol(String uid) =>
       _db.collection('users').doc(uid).collection('favorites');
 
-  /// أضف طبيب إلى المفضلة (نحفظ snapshot بيانات الطبيب لتسهيل العرض)
   static Future<void> addFavorite(Doctor doctor) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) throw Exception('Not authenticated');
 
-    await _favCol(uid).doc(doctor.id).set({
-      'id': doctor.id,
-      'name': doctor.name,
-      'specialization': doctor.specialization,
-      'imageUrl': doctor.imageUrl,
-      'description': doctor.description,
-      'rating': doctor.rating,
-      'fee': doctor.fee,
-      'addedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    await _favsCol(uid).doc(doctor.id).set(doctor.toJson());
   }
 
   static Future<void> removeFavorite(String doctorId) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) throw Exception('Not authenticated');
-    await _favCol(uid).doc(doctorId).delete();
+
+    await _favsCol(uid).doc(doctorId).delete();
   }
 
-  /// Stream لمجموعة معرّفات الأطباء المفضّلين
-  static Stream<Set<String>> favoriteIdsStream(String uid) {
-    return _favCol(uid)
-        .snapshots()
-        .map((s) => s.docs.map((d) => d.id).toSet());
-  }
-
-  /// Stream لقائمة الأطباء (معلومات كاملة) من المفضلة
-  static Stream<List<Doctor>> favoritesStream(String uid) {
-    return _favCol(uid)
-        .orderBy('addedAt', descending: true)
-        .snapshots()
-        .map((s) => s.docs.map((d) => Doctor.fromJson(d.data())).toList());
-  }
-
-  /// Toggle: إذا موجود يشيله، إذا مش موجود يضيفه
-  static Future<void> toggleFavorite(Doctor doctor) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) throw Exception('Not authenticated');
-    final doc = await _favCol(uid).doc(doctor.id).get();
-    if (doc.exists) {
-      await removeFavorite(doctor.id);
-    } else {
-      await addFavorite(doctor);
-    }
+  static Stream<List<Doctor>> myFavoritesStream(String uid) {
+    return _favsCol(uid).snapshots().map((snap) =>
+        snap.docs.map((d) => Doctor.fromJson(d.data())).toList());
   }
 }

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
+import 'utils/constants.dart';
 
-import 'screens/welcome_screen.dart';
-import 'screens/main_shell.dart';
+import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
 
 void main() async {
@@ -28,24 +27,11 @@ class DocTimeApp extends StatelessWidget {
       title: 'DocTime',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.white,
+        colorScheme: ColorScheme.fromSeed(seedColor: kPrimary),
         useMaterial3: true,
+        scaffoldBackgroundColor: Colors.white,
       ),
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snap) {
-          if (snap.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
-          if (snap.data != null) {
-            return const MainShell(); // logged-in
-          }
-          return const WelcomeScreen(); // logged-out
-        },
-      ),
+      home: const SplashScreen(), // 🚀 نبدأ مع SplashScreen
     );
   }
 }

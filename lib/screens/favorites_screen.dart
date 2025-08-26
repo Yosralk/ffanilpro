@@ -11,6 +11,7 @@ class FavoritesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
+
     if (uid == null) {
       return const Scaffold(
         body: Center(child: Text('Please sign in to view favorites.')),
@@ -18,9 +19,12 @@ class FavoritesScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Favorites'), backgroundColor: kPrimary),
+      appBar: AppBar(
+        title: const Text('My Favorites'),
+        backgroundColor: kPrimary,
+      ),
       body: StreamBuilder<List<Doctor>>(
-        stream: DbService.favoritesStream(uid),
+        stream: DbService.myFavoritesStream(uid),
         builder: (context, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -28,31 +32,68 @@ class FavoritesScreen extends StatelessWidget {
           if (snap.hasError) {
             return Center(child: Text('Error: ${snap.error}'));
           }
+
           final favs = snap.data ?? [];
           if (favs.isEmpty) {
-            return const Center(child: Text('No favorite doctors yet.'));
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.favorite_border, size: 80, color: Colors.grey),
+                  SizedBox(height: 10),
+                  Text(
+                    'No favorites yet.',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+            );
           }
-          return ListView.separated(
+
+          return ListView.builder(
             itemCount: favs.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
             itemBuilder: (context, i) {
               final d = favs[i];
-              return ListTile(
-                leading: CircleAvatar(backgroundImage: NetworkImage(d.imageUrl)),
-                title: Text(d.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text('${d.specialization} • ⭐ ${d.rating.toStringAsFixed(1)}'),
-                trailing: IconButton(
-                  icon: const Icon(Icons.favorite, color: Colors.red),
-                  onPressed: () async {
-                    await DbService.removeFavorite(d.id);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Removed from favorites')),
+              return Card(
+                margin:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 3,
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(12),
+                  leading: CircleAvatar(
+                    radius: 28,
+                    backgroundImage: NetworkImage(d.imageUrl),
+                  ),
+                  title: Text(
+                    d.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                      '${d.specialization} • ⭐ ${d.rating.toStringAsFixed(1)}'),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () async {
+                      await DbService.removeFavorite(d.id);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${d.name} removed from favorites'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DoctorDetailsScreen(doctor: d),
+                      ),
                     );
                   },
                 ),
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => DoctorDetailsScreen(doctor: d)));
-                },
               );
             },
           );
