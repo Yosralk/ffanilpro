@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "922415439201",
+    "project_id": "yosrkh20",
+    "storage_bucket": "yosrkh20.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:922415439201:android:e466b7d0bf31cb57c43920",
+        "android_client_info": {
+          "package_name": "com.example.ffanilpro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVOvAnMwn3nlwhKUtnIPvpt5ibmsq5P8Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
