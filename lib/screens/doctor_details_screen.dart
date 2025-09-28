@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/doctor_model.dart';
 import '../services/db_service.dart';
-import '../services/notification_service.dart'; // ✅ استدعاء خدمة الإشعارات
 import '../utils/constants.dart';
 
 class DoctorDetailsScreen extends StatefulWidget {
@@ -22,46 +21,13 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
   });
 
   final _times = const [
-    '09:00 AM','10:30 AM','12:00 PM','01:30 PM','03:00 PM','04:30 PM',
+    '09:00 AM',
+    '10:30 AM',
+    '12:00 PM',
+    '01:30 PM',
+    '03:00 PM',
+    '04:30 PM',
   ];
-
-  Future<void> _book() async {
-    if (_selectedDate == null || _selectedTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select date & time.')),
-      );
-      return;
-    }
-    try {
-      // ✅ إضافة الموعد إلى Firestore
-      await DbService.addAppointment(
-        doctor: widget.doctor,
-        date: _selectedDate!,
-        time: _selectedTime!,
-      );
-
-      // ✅ تحويل التاريخ والوقت المختارين إلى DateTime
-      final appointmentDateTime = DateTime.parse("$_selectedDate $_selectedTime");
-
-      // ✅ إنشاء Reminder قبل الموعد بساعة
-      final reminderTime = appointmentDateTime.subtract(const Duration(hours: 1));
-      await NotificationService.schedule(
-        title: "Appointment Reminder",
-        body: "You have an appointment with ${widget.doctor.name} at $_selectedTime",
-        scheduledTime: reminderTime,
-      );
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Appointment booked successfully! Reminder set.')),
-      );
-      Navigator.pop(context);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Booking failed: $e')),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,14 +43,24 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: CircleAvatar(radius: 50, backgroundImage: NetworkImage(d.imageUrl))),
+            Center(
+              child: CircleAvatar(
+                radius: 50,
+                backgroundImage: NetworkImage(d.imageUrl),
+              ),
+            ),
             const SizedBox(height: 12),
             Center(
-              child: Text(d.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              child: Text(
+                d.name,
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
             ),
             Center(
-              child: Text('${d.specialization} • ⭐ ${d.rating.toStringAsFixed(1)}',
-                  style: const TextStyle(color: Colors.grey)),
+              child: Text(
+                '${d.specialization} • ⭐ ${d.rating.toStringAsFixed(1)}',
+                style: const TextStyle(color: Colors.grey),
+              ),
             ),
             const SizedBox(height: 10),
             Row(
@@ -94,11 +70,15 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            const Text('About Doctor', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const Text(
+              'About Doctor',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 6),
             Text(d.description),
             const SizedBox(height: 20),
 
+            // اختيار التاريخ
             const Text('Select Date', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             Wrap(
@@ -114,6 +94,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             ),
             const SizedBox(height: 16),
 
+            // اختيار الوقت
             const Text('Select Time', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             Wrap(
@@ -129,16 +110,41 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             ),
             const SizedBox(height: 24),
 
+            // زر اضافة للسلة
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _book,
+                onPressed: () async {
+                  if (_selectedDate == null || _selectedTime == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Please select date & time")),
+                    );
+                    return;
+                  }
+
+                  await DbService.addToCart(
+                    doctor: widget.doctor,
+                    date: _selectedDate!,
+                    time: _selectedTime!,
+                  );
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Added to cart 🛒")),
+                    );
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPrimary,
                   minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: const Text('Book Appointment'),
+                child: const Text(
+                  "Add to Cart",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],

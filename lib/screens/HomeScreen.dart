@@ -5,6 +5,7 @@ import '../utils/constants.dart';
 import 'doctor_details_screen.dart';
 import 'appointments_screen.dart';
 import 'profile_screen.dart';
+import 'cart_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -52,6 +53,16 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('DocTime'),
         backgroundColor: kPrimary,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.shopping_cart),
+            tooltip: 'My Cart',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CartScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.calendar_month),
             tooltip: 'My Appointments',
