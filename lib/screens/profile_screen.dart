@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import '../utils/constants.dart';
+import 'LoginScreen.dart';
+
+
+
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -56,6 +60,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _logout() async {
     await AuthService.signOut();
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+    );
   }
 
   @override
@@ -69,15 +79,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // 👤 صورة البروفايل
             CircleAvatar(
               radius: 50,
               backgroundColor: kPrimary.withOpacity(0.1),
               child: const Icon(Icons.person, size: 60, color: kPrimary),
             ),
             const SizedBox(height: 16),
-
-            // الاسم
             TextField(
               controller: name,
               decoration: const InputDecoration(
@@ -86,8 +93,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 12),
-
-            // الايميل (read-only)
             TextField(
               controller: email,
               enabled: false,
@@ -97,8 +102,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 12),
-
-            // رقم الهاتف (read-only)
             TextField(
               controller: phone,
               enabled: false,
@@ -110,8 +113,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 24),
             const Divider(),
-
-            // زر حفظ
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -139,8 +140,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 12),
-
-            // زر تسجيل خروج
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(

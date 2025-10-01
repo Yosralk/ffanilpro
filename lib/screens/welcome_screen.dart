@@ -11,7 +11,6 @@ class WelcomeScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // الخلفية المتدرجة
           Container(height: 280, decoration: curvedHeader()),
 
           SafeArea(
@@ -35,8 +34,6 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-
-                // البطاقة البيضاء
                 Container(
                   width: double.infinity,
                   padding:

@@ -21,7 +21,7 @@ class DocTimeApp extends StatelessWidget {
     return MaterialApp(
       title: 'DocTime',
       debugShowCheckedModeBanner: false,
-      theme: buildTheme(), // ✅ استخدم الثيم الموحد
+      theme: buildTheme(),
       home: const SplashScreen(),
     );
   }

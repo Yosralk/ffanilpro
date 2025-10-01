@@ -7,7 +7,9 @@ class ApiService {
   /// جلب جميع الأطباء من Firestore
   static Future<List<Doctor>> fetchDoctors() async {
     final snap = await _db.collection('doctors').get();
-    return snap.docs.map((doctor) => Doctor.fromJson(doctor.data())).toList();
+    return snap.docs
+        .map((doc) => Doctor.fromMap(doc.data(), doc.id))
+        .toList();
   }
 
   /// إضافة دكتور (ممكن تستعملها للتجربة أو للوحة تحكم)

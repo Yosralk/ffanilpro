@@ -1,3 +1,4 @@
+import 'package:ffanilpro/screens/LoginScreen.dart';
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
 import '../widgets/custom_button.dart';
@@ -32,6 +33,7 @@ class _SignupScreenState extends State<SignupScreen> {
         displayName:
         nameController.text.trim().isEmpty ? "User" : nameController.text,
       );
+      Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context) => LoginScreen(),), (route) => false);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Sign up failed: $e')),

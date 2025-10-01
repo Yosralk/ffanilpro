@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:ffanilpro/models/appointment.dart';
+import '../models/appointment.dart';
 import '../models/cart_item_model.dart';
 import '../models/doctor_model.dart';
 
@@ -34,9 +34,8 @@ class DbService {
     return _apptsCol(uid)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs
-        .map((d) => Appointment.fromMap(d.id, d.data()))
-        .toList());
+        .map((snap) =>
+        snap.docs.map((d) => Appointment.fromMap(d.id, d.data())).toList());
   }
 
   static Future<void> deleteAppointment(String id) async {
@@ -62,9 +61,8 @@ class DbService {
   }
 
   static Stream<List<Doctor>> myFavoritesStream(String uid) {
-    return _favsCol(uid)
-        .snapshots()
-        .map((snap) => snap.docs.map((d) => Doctor.fromJson(d.data())).toList());
+    return _favsCol(uid).snapshots().map(
+            (snap) => snap.docs.map((d) => Doctor.fromMap(d.data(), d.id)).toList());
   }
 
   // ---------------- Cart -----------------
@@ -96,9 +94,8 @@ class DbService {
     return _cartCol(uid)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs
-        .map((d) => CartItem.fromMap(d.id, d.data()))
-        .toList());
+        .map((snap) =>
+        snap.docs.map((d) => CartItem.fromMap(d.id, d.data())).toList());
   }
 
   static Future<void> removeFromCart(String itemId) async {
