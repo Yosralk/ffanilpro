@@ -17,6 +17,7 @@ class Doctor {
     required this.rating,
   });
 
+  // من Firestore
   factory Doctor.fromMap(Map<String, dynamic>? data, String documentId) {
     if (data == null) {
       return Doctor(
@@ -38,6 +39,20 @@ class Doctor {
       imageUrl: data['imageUrl'] ?? '',
       fee: (data['fee'] is num) ? (data['fee'] as num).toDouble() : 0.0,
       rating: (data['rating'] is num) ? (data['rating'] as num).toDouble() : 0.0,
+    );
+  }
+
+  // من Overpass (OSM)
+  factory Doctor.fromOverpass(Map<String, dynamic> e) {
+    final tags = (e['tags'] ?? {}) as Map<String, dynamic>;
+    return Doctor(
+      id: "osm_${e['id']}",
+      name: tags['name'] ?? "Unknown",
+      specialization: tags['amenity'] ?? "clinic",
+      description: tags['description'] ?? '',
+      imageUrl: '',
+      fee: 10.0,
+      rating: 4.0,
     );
   }
 

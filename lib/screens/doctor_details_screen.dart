@@ -46,7 +46,10 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             Center(
               child: CircleAvatar(
                 radius: 50,
-                backgroundImage: NetworkImage(d.imageUrl),
+                backgroundImage: d.imageUrl.isNotEmpty
+                    ? NetworkImage(d.imageUrl)
+                    : const AssetImage("assets/images/doctor.png")
+                as ImageProvider,
               ),
             ),
             const SizedBox(height: 12),
@@ -66,7 +69,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             Row(
               children: [
                 const Icon(Icons.attach_money, color: kPrimary),
-                Text('Consultation Fee: ${d.fee.toStringAsFixed(0)}'),
+                Text('Consultation Fee: ${d.fee.toStringAsFixed(0)} JOD'),
               ],
             ),
             const SizedBox(height: 16),
@@ -75,7 +78,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
-            Text(d.description),
+            Text(d.description.isNotEmpty ? d.description : "No description"),
             const SizedBox(height: 20),
 
             // اختيار التاريخ
