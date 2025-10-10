@@ -1,9 +1,9 @@
-import 'package:ffanilpro/screens/HomeScreen.dart';
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
 import '../widgets/custom_button.dart';
 import '../services/auth_service.dart';
 import 'SignupScreen.dart';
+import 'main_shell.dart'; // ✅ أضف هذا
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,7 +25,13 @@ class _LoginScreenState extends State<LoginScreen> {
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
-      Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context) => HomeScreen(),), (route) => false);
+
+      // ✅ بعد تسجيل الدخول ننتقل إلى MainShell بدل HomeScreen
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const MainShell()),
+            (route) => false,
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Sign in failed: $e')),
@@ -54,9 +60,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Text(
                   "Welcome Back 👋",
                   style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 Expanded(
@@ -68,9 +75,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: const [
                         BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 8,
-                            offset: Offset(0, 4))
+                          color: Colors.black12,
+                          blurRadius: 8,
+                          offset: Offset(0, 4),
+                        )
                       ],
                     ),
                     child: SingleChildScrollView(
@@ -107,15 +115,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ],
                               ),
                               TextButton(
-                                  onPressed: () {},
-                                  child: const Text("Forgot password?")),
+                                onPressed: () {},
+                                child: const Text("Forgot password?"),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 20),
                           _loading
                               ? const CircularProgressIndicator()
                               : CustomButton(
-                              text: "Sign In", onPressed: _onSignin),
+                            text: "Sign In",
+                            onPressed: _onSignin,
+                          ),
                           const SizedBox(height: 18),
                           const Text("Don’t have an account?"),
                           TextButton(
@@ -123,14 +134,16 @@ class _LoginScreenState extends State<LoginScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (_) => const SignupScreen()),
+                                  builder: (_) => const SignupScreen(),
+                                ),
                               );
                             },
                             child: const Text(
                               "Sign Up",
                               style: TextStyle(
-                                  color: kPrimary,
-                                  fontWeight: FontWeight.bold),
+                                color: kPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           )
                         ],

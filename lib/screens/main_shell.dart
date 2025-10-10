@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
 import 'HomeScreen.dart';
+import 'explore_screen.dart';
 import 'appointments_screen.dart';
-import 'favorites_screen.dart'; //
+import 'favorites_screen.dart';
 import 'profile_screen.dart';
 
 class MainShell extends StatefulWidget {
@@ -17,8 +18,9 @@ class _MainShellState extends State<MainShell> {
 
   final _pages = const [
     HomeScreen(),
+    ExploreScreen(),     
     AppointmentsScreen(),
-    FavoritesScreen(), // ✅ مضاف
+    FavoritesScreen(),
     ProfileScreen(),
   ];
 
@@ -37,6 +39,11 @@ class _MainShellState extends State<MainShell> {
             label: 'Home',
           ),
           NavigationDestination(
+            icon: Icon(Icons.public_outlined),
+            selectedIcon: Icon(Icons.public),
+            label: 'Explore', // 👈 API Screen
+          ),
+          NavigationDestination(
             icon: Icon(Icons.calendar_month_outlined),
             selectedIcon: Icon(Icons.calendar_month),
             label: 'Appointments',
@@ -44,7 +51,7 @@ class _MainShellState extends State<MainShell> {
           NavigationDestination(
             icon: Icon(Icons.favorite_border),
             selectedIcon: Icon(Icons.favorite),
-            label: 'Favorites', // ✅
+            label: 'Favorites',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),

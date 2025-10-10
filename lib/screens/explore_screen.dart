@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
+import '../services/jordan_places_service.dart';
 import '../models/doctor_model.dart';
 import '../utils/constants.dart';
 import 'doctor_details_screen.dart';
 import '../services/db_service.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class ExploreScreen extends StatefulWidget {
+  const ExploreScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<ExploreScreen> createState() => _ExploreScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _ExploreScreenState extends State<ExploreScreen> {
   late Future<List<Doctor>> _futureDoctors;
 
   @override
   void initState() {
     super.initState();
-    _futureDoctors = ApiService.fetchDoctors();
+    _futureDoctors = JordanPlacesService.fetchProviders(limit: 25);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Doctors from Firebase"),
+        title: const Text("Doctors in Jordan (API)"),
         backgroundColor: kPrimary,
       ),
       body: FutureBuilder<List<Doctor>>(
@@ -40,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           final doctors = snap.data ?? [];
           if (doctors.isEmpty) {
-            return const Center(child: Text("No doctors in Firebase yet."));
+            return const Center(child: Text("No doctors found in API."));
           }
 
           return ListView.builder(
@@ -54,12 +54,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     backgroundColor: kPrimary.withOpacity(0.1),
                     child: const Icon(Icons.local_hospital, color: kPrimary),
                   ),
-                  title: Text(d.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(
+                    d.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   subtitle: Text(d.specialization),
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => DoctorDetailsScreen(doctor: d)),
+                      MaterialPageRoute(
+                        builder: (_) => DoctorDetailsScreen(doctor: d),
+                      ),
                     );
                   },
                   trailing: IconButton(
